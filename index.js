@@ -35,7 +35,7 @@ module.exports = responseTime
  * @public
  */
 
-function responseTime (options) {
+function responseTime (options,timeoutFn) {
   var opts = options || {}
 
   if (typeof options === 'number') {
@@ -51,7 +51,11 @@ function responseTime (options) {
 
   return function responseTime (req, res, next) {
     var startAt = process.hrtime()
-
+    if(opts.timeout && timeoutFn){
+      req.caiTimeout = setTimeout(function(){
+        timeoutFn(req,res)
+      },opts.timeout)
+    }
     onHeaders(res, function onHeaders () {
       var diff = process.hrtime(startAt)
       var time = diff[0] * 1e3 + diff[1] * 1e-6
@@ -83,6 +87,7 @@ function createSetHeader (options) {
     : true
 
   return function setResponseHeader (req, res, time) {
+    clearTimeout(req.caiTimeout);
     if (res.getHeader(header)) {
       return
     }
