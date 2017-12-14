@@ -51,7 +51,9 @@ function responseTime (options,timeoutFn) {
 
   return function responseTime (req, res, next) {
     var startAt = process.hrtime()
-    if(opts.timeout && timeoutFn){
+    var isPreview = req.query && req.query.mwpreview;
+    isPreview = isPreview || (req.body && req.body.mwpreview)
+    if(!isPreview && opts.timeout && timeoutFn){
       req.caiTimeout = setTimeout(function(){
         timeoutFn(req,res)
       },opts.timeout)
